@@ -9,7 +9,7 @@ export class JWTUtill {
     private static refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 
 
-    static generateAceessToken ( payload: {userId : string}) : string {
+    static generateAceessToken ( payload: {userId : string, email: string}) : string {
         return jwt.sign(payload, this.accessSecret, {
             expiresIn: this.accessExpiresIn,
             issuer: 'devflow-api',
