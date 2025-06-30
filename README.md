@@ -57,8 +57,8 @@ npm run dev
 - **TypeScript** - Type safety
 - **PostgreSQL** - Primary database
 - **Prisma** - Database ORM
-- **Redis** - Caching (upcoming)
-- **JWT** - Authentication (upcoming)
+- **Redis** - Caching
+- **JWT** - Authentication
 
 ### DevOps
 - **Docker** - Local development
