@@ -2,7 +2,7 @@
 
 A modern platform where developers showcase projects, receive peer code reviews, and discover career opportunities.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
@@ -42,7 +42,7 @@ npm run dev
 - Frontend: http://localhost:3000
 - Backend: http://localhost:3001/health
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Next.js 14** - React framework with App Router
@@ -65,7 +65,7 @@ npm run dev
 - **GitHub Actions** - CI/CD
 - **ESLint + Prettier** - Code quality
 
-## 📊 Database Schema
+## Database Schema
 
 ```prisma
 model User {
@@ -96,7 +96,7 @@ model Review {
 }
 ```
 
-## 🛠️ Development Commands
+## Development Commands
 
 ### Backend
 ```bash
@@ -119,7 +119,7 @@ npx prisma generate  # Generate client
 npx prisma db push   # Sync schema
 ```
 
-## 📈 15-Day Roadmap
+## 15-Day Roadmap
 
 ### Phase 1: Foundation (Days 1-5)
 - [x] Project setup & database
