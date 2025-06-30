@@ -40,7 +40,7 @@ npm run dev
 
 5. **Access**
 - Frontend: http://localhost:3000
-- Backend: http://localhost:5000/health
+- Backend: http://localhost:3001/health
 
 ## 🏗️ Tech Stack
 
