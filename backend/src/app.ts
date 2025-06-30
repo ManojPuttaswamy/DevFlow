@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import prisma from './utils/database';
+import authRoutes from './routes/authRoutes';
 
 const app = express();
 
@@ -52,6 +53,8 @@ app.get('/health', async (req, res) => {
 });
 
 // API routes
+app.use('/api/auth',authRoutes);
+
 app.use('/api', (req, res) => {
   res.json({ 
     message: 'DevFlow API v1.0',

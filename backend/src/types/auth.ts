@@ -2,8 +2,8 @@ export interface RegisterRequest {
     email: string;
     username: string;
     password: string;
-    firstname?: string;
-    lastname?: string;
+    firstName?: string;
+    lastName?: string;
 }
 
 export interface LoginRequest {
@@ -16,11 +16,11 @@ export interface AuthResponse {
         id: string;
         email: string;
         username: string;
-        password: string;
-        firstname?: string;
-        lastname?: string;
-        verified : boolean;
-    };
+        firstName?: string | null;
+        lastName?: string | null;
+        verified: boolean;
+        createdAt?: Date;
+      };
     token: string;
 }
 
