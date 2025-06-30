@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  firstName String?
+  lastName  String?
+  avatar    String?
+  bio       String?
+  skills    String[] // Array of skills
+  
+  // Authentication
+  password  String
+  verified  Boolean  @default(false)
+  
+  // Profile
+  githubUrl    String?
+  linkedinUrl  String?
+  portfolioUrl String?
+  location     String?
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  projects     Project[]
+  reviewsGiven Review[] @relation("ReviewerReviews")
+  reviewsReceived Review[] @relation("AuthorReviews")
+  
+  @@map("users")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  githubUrl   String?
+  liveUrl     String?
+  technologies String[] // Array of tech stack
+  
+  // Project metadata
+  stars       Int      @default(0)
+  language    String?
+  isPrivate   Boolean  @default(false)
+  
+  // Relations
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  reviews     Review[]
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("projects")
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  rating      Int      // 1-5 stars
+  comment     String?
+  status      ReviewStatus @default(PENDING)
+  
+  // Relations
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  reviewerId  String
+  reviewer    User     @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+  
+  authorId    String   // Project author
+  author      User     @relation("AuthorReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([projectId, reviewerId])
+  @@map("reviews")
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IN_PROGRESS
+}
