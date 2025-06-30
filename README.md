@@ -13,7 +13,7 @@ A modern platform where developers showcase projects, receive peer code reviews,
 
 1. **Clone and setup**
 ```bash
-git clone <your-repo>
+git clone https://github.com/ManojPuttaswamy/DevFlow.git
 cd devflow
 ```
 
