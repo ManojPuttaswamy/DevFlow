@@ -3,8 +3,12 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
+import path from 'path';
 import prisma from './utils/database';
 import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+import projectRoutes from './routes/projectRoutes';
 
 const app = express();
 
@@ -13,7 +17,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
 // Rate limiting
@@ -29,6 +33,9 @@ app.use(morgan('combined'));
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Health check route with database test
 app.get('/health', async (req, res) => {
@@ -55,13 +62,17 @@ app.get('/health', async (req, res) => {
 
 // API routes
 app.use('/api/auth',authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/projects', projectRoutes);
 
 app.use('/api', (req, res) => {
   res.json({ 
     message: 'DevFlow API v1.0',
     endpoints: {
       health: '/health',
-      api: '/api'
+      auth: '/api/auth',
+      users: '/api/users',
+      projects: '/api/projects'
     }
   });
 });

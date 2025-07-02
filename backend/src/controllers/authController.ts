@@ -90,7 +90,7 @@ export class AuthController {
         }
         catch (error) {
             console.error('Registrartion error: ', error);
-            res.status(500).json({
+            return res.status(500).json({
                 error: 'Registration failed',
                 message: 'Internal Server Error'
             });
@@ -159,7 +159,7 @@ export class AuthController {
         }
         catch (error) {
             console.error('Login error:', error);
-            res.status(500).json({
+            return res.status(500).json({
                 error: 'Login failed',
                 message: 'Internal server error'
             });
@@ -261,7 +261,7 @@ export class AuthController {
             return res.json({ user });
         } catch (error) {
             console.error('Get profile error:', error);
-            res.status(500).json({
+            return res.status(500).json({
                 error: 'Failed to get profile',
                 message: 'Internal server error'
             });

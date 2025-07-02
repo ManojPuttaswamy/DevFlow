@@ -13,19 +13,33 @@ model User {
   username  String   @unique
   firstName String?
   lastName  String?
-  avatar    String?
-  bio       String?
-  skills    String[] // Array of skills
+  
+  // Enhanced profile fields
+  bio         String?
+  avatar      String?   // URL to avatar image
+  title       String?   // e.g., "Full Stack Developer"
+  company     String?
+  location    String?
+  website     String?
+  
+  // Social links
+  githubUrl    String?
+  linkedinUrl  String?
+  twitterUrl   String?
+  portfolioUrl String?
+  
+  // Skills and experience
+  skills       String[]  // Array of skills
+  experience   String?   // Years of experience
+  availability String?   // Available for work, freelance, etc.
   
   // Authentication
   password  String
   verified  Boolean  @default(false)
   
-  // Profile
-  githubUrl    String?
-  linkedinUrl  String?
-  portfolioUrl String?
-  location     String?
+  // Profile completion and activity
+  profileViews Int @default(0)
+  lastActive   DateTime @default(now())
   
   // Metadata
   createdAt DateTime @default(now())
@@ -43,14 +57,35 @@ model Project {
   id          String   @id @default(cuid())
   title       String
   description String?
-  githubUrl   String?
-  liveUrl     String?
-  technologies String[] // Array of tech stack
   
-  // Project metadata
-  stars       Int      @default(0)
-  language    String?
-  isPrivate   Boolean  @default(false)
+  // Project details
+  longDescription String?   // Detailed project description
+  features        String[]  // Array of key features
+  challenges      String?   // Challenges faced and solutions
+  learnings       String?   // What was learned from this project
+  
+  // URLs and media
+  githubUrl    String?
+  liveUrl      String?
+  videoUrl     String?      // Demo video URL
+  images       String[]     // Array of image URLs
+  
+  // Technical details
+  technologies String[]     // Tech stack
+  category     String?      // Web App, Mobile App, API, etc.
+  status       ProjectStatus @default(IN_PROGRESS)
+  
+  // GitHub integration
+  githubRepo     String?    // owner/repo format
+  githubStars    Int?       @default(0)
+  githubForks    Int?       @default(0)
+  githubLanguage String?    // Primary language from GitHub
+  lastCommit     DateTime?  // Last commit date
+  
+  // Engagement
+  views          Int        @default(0)
+  likes          Int        @default(0)
+  featured       Boolean    @default(false)
   
   // Relations
   authorId    String
@@ -70,6 +105,12 @@ model Review {
   comment     String?
   status      ReviewStatus @default(PENDING)
   
+  // Detailed review fields
+  codeQuality    Int?    // 1-5 rating
+  documentation  Int?    // 1-5 rating
+  userExperience Int?    // 1-5 rating
+  innovation     Int?    // 1-5 rating
+  
   // Relations
   projectId   String
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -86,6 +127,14 @@ model Review {
   
   @@unique([projectId, reviewerId])
   @@map("reviews")
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+  MAINTENANCE
+  ARCHIVED
 }
 
 enum ReviewStatus {
