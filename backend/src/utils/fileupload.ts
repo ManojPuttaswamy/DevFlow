@@ -49,6 +49,61 @@ export const upload = multer({
     }
 });
 
+export const getFileUrl = (filename: string, type: 'avatar' | 'project'): string => {
+    const baseUrl = process.env.API_URL || 'http://localhost:3001';
+    const folder = type === 'avatar' ? 'avatars' : 'projects';
+    return `${baseUrl}/uploads/${folder}/${filename}`;
+};
+
+export const deleteFile = (filePath: string): void => {
+    try {
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`File deleted: ${filePath}`);
+        }
+    } catch (error) {
+        console.error('Error deleting file:', error);
+    }
+};
+
+export const getFilePath = (filename: string, type: 'avatar' | 'project'): string => {
+    const uploadDir = path.join(process.cwd(), 'uploads');
+    const folder = type === 'avatar' ? 'avatars' : 'projects';
+    return path.join(uploadDir, folder, filename);
+};
+
+export const processUploadedImage = async (
+    file: Express.Multer.File, 
+    type: 'avatar' | 'project'
+): Promise<{ filePath: string; fileUrl: string }> => {
+    try {
+        let processedPath: string;
+        
+        if (type === 'avatar') {
+            processedPath = await ImageProcessor.processAvatar(file.path);
+        } else {
+            processedPath = await ImageProcessor.processProjectImage(file.path);
+        }
+        
+        const filename = path.basename(processedPath);
+        const fileUrl = getFileUrl(filename, type);
+        
+        return { filePath: processedPath, fileUrl };
+    } catch (error) {
+        console.error('Error processing image:', error);
+        throw error;
+    }
+};
+
+export const deleteMultipleFiles = (filePaths: string[]): void => {
+    filePaths.forEach(filePath => {
+        deleteFile(filePath);
+    });
+};
+export const getUploadErrorMessage = (error: any): string => {
+    return handleMulterError(error);
+};
+
 export class ImageProcessor {
     static async processAvatar(filePath: string): Promise<string> {
         const outputPath = filePath.replace(/\.[^/.]+$/, '-processed.jpg');

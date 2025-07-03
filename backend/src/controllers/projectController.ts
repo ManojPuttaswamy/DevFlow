@@ -1,14 +1,84 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/database';
-import { ImageProcessor, handleMulterError } from '../utils/fileupload';
-import fs from 'fs-extra';
-import { compare } from 'bcryptjs';
+import { getFileUrl, deleteFile, processUploadedImage, deleteMultipleFiles } from '../utils/fileupload';
 import path from 'path';
 
 export class ProjectController {
+    static async getUserProjects(req: Request, res: Response) {
+        try {
+            const { userId } = req.params;
+            const currentUserId = req.user?.id;
+            const {
+                page = '1',
+                limit = '12',
+                status,
+            } = req.query;
+
+            const pageNum = parseInt(page as string);
+            const limitNum = parseInt(limit as string);
+            const skip = (pageNum - 1) * limitNum;
+
+            const where: any = { authorId: userId };
+
+            if (currentUserId !== userId) {
+                where.status = { not: 'ARCHIVED' };
+            } else if (status) {
+                where.status = status;
+            }
+
+            const [projects, total] = await Promise.all([
+                prisma.project.findMany({
+                    where,
+                    include: {
+                        author: {
+                            select: {
+                                id: true,
+                                username: true,
+                                firstName: true,
+                                lastName: true,
+                                avatar: true
+                            }
+                        },
+                        _count: {
+                            select: { reviews: true }
+                        }
+                    },
+                    orderBy: [
+                        { featured: 'desc' },
+                        { createdAt: 'desc' }
+                    ],
+                    skip,
+                    take: limitNum
+                }),
+                prisma.project.count({ where })
+            ]);
+
+            const totalPages = Math.ceil(total / limitNum);
+
+            return res.json({
+                projects,
+                pagination: {
+                    page: pageNum,
+                    limit: limitNum,
+                    total,
+                    totalPages,
+                    hasNext: pageNum < totalPages,
+                    hasPrev: pageNum > 1
+                }
+            })
+
+        }
+        catch (error) {
+            console.error('Get projects error:', error);
+            return res.status(500).json({
+                error: 'Failed to get projects',
+                message: 'Internal server error'
+            });
+        }
+    }
+
     static async getProjects(req: Request, res: Response) {
         try {
-
             const {
                 page = '1',
                 limit = '12',
@@ -26,26 +96,29 @@ export class ProjectController {
 
             const where: any = {};
 
-            if (category) {
+            if (category && typeof category === 'string') {
                 where.category = category;
             }
-            if (technology) {
+            if (technology && typeof technology === 'string') {
                 where.technologies = {
                     has: technology
                 };
             }
-            if (status) {
+            if (status && typeof status === 'string') {
                 where.status = status;
+            } else {
+                where.status = { not: 'ARCHIVED' };
             }
-            if (featured === 'true') {
-                where.featured = true;
+
+            if (featured !== undefined) {
+                where.featured = featured === 'true';
             }
             if (author) {
                 where.author = {
                     username: author
                 };
             }
-            if (search) {
+            if (search && typeof search === 'string') {
                 where.OR = [
                     { title: { contains: search as string, mode: 'insensitive' } },
                     { description: { contains: search as string, mode: 'insensitive' } },
@@ -122,6 +195,13 @@ export class ProjectController {
 
             const { id } = req.params;
 
+            if (!id) {
+                return res.status(400).json({
+                    error: 'Invalid project ID',
+                    message: 'Project ID is required'
+                });
+            }
+
             const project = await prisma.project.findUnique({
                 where: { id },
                 include: {
@@ -133,7 +213,9 @@ export class ProjectController {
                             lastName: true,
                             avatar: true,
                             title: true,
-                            company: true
+                            company: true,
+                            githubUrl: true,
+                            linkedinUrl: true
                         }
                     },
                     reviews: {
@@ -210,17 +292,18 @@ export class ProjectController {
                 });
             }
 
-            let imageUrls: string[] = [];
+            const parsedTechnologies = typeof technologies === 'string'
+                ? JSON.parse(technologies)
+                : technologies;
+            const parsedFeatures = typeof features === 'string'
+                ? JSON.parse(features)
+                : features;
+
+            const images: string[] = [];
             if (req.files && Array.isArray(req.files)) {
                 for (const file of req.files) {
-                    try {
-                        const processedImagePath = await ImageProcessor.processProjectImage(file.path);
-                        const publicUrl = ImageProcessor.getPublicUrl(processedImagePath);
-                        imageUrls.push(publicUrl);
-                    } catch (error) {
-                        console.error('Error processing image:', error);
-                        fs.remove(file.path).catch(console.error);
-                    }
+                    const { fileUrl } = await processUploadedImage(file, 'project');
+                    images.push(fileUrl);
                 }
             }
 
@@ -236,10 +319,10 @@ export class ProjectController {
                     liveUrl,
                     videoUrl,
                     technologies: Array.isArray(technologies) ? technologies : [],
-                    category,
-                    status,
+                    category: category || 'WEB_APP',
+                    status: status || 'IN_PROGRESS',
                     githubRepo,
-                    images: imageUrls,
+                    images,
                     authorId: userId
                 },
                 include: {
@@ -250,6 +333,9 @@ export class ProjectController {
                             lastName: true,
                             avatar: true
                         }
+                    },
+                    _count: {
+                        select: { reviews: true }
                     }
                 }
             });
@@ -263,15 +349,13 @@ export class ProjectController {
             console.error('Create project error:', error);
 
             if (req.files && Array.isArray(req.files)) {
-                for (const file of req.files) {
-                    fs.remove(file.path).catch(console.error);
-                }
+                const filePaths = req.files.map((file: Express.Multer.File) => file.path);
+                deleteMultipleFiles(filePaths);
             }
 
-            const errorMessage = handleMulterError(error);
             return res.status(500).json({
                 error: 'Failed to create project',
-                message: errorMessage
+                message: 'Internal server error'
             });
         }
     }
@@ -279,22 +363,6 @@ export class ProjectController {
         try {
             const userId = req.user!.id;
             const { id } = req.params;
-            const {
-                title,
-                description,
-                longDescription,
-                features,
-                challenges,
-                learnings,
-                githubUrl,
-                liveUrl,
-                videoUrl,
-                technologies,
-                category,
-                status,
-                githubRepo,
-                featured
-            } = req.body;
 
             const existingProject = await prisma.project.findUnique({
                 where: { id },
@@ -315,21 +383,40 @@ export class ProjectController {
                 });
             }
 
-            let newImageUrls: string[] = [];
+            const {
+                title,
+                description,
+                longDescription,
+                features,
+                challenges,
+                learnings,
+                githubUrl,
+                liveUrl,
+                videoUrl,
+                technologies,
+                category,
+                status,
+                githubRepo,
+                featured
+            } = req.body;
+
+            const parsedTechnologies = typeof technologies === 'string'
+                ? JSON.parse(technologies)
+                : technologies;
+            const parsedFeatures = typeof features === 'string'
+                ? JSON.parse(features)
+                : features;
+
+
+            const newImages: string[] = [];
             if (req.files && Array.isArray(req.files)) {
                 for (const file of req.files) {
-                    try {
-                        const processedImagePath = await ImageProcessor.processProjectImage(file.path);
-                        const publicUrl = ImageProcessor.getPublicUrl(processedImagePath);
-                        newImageUrls.push(publicUrl);
-                    } catch (error) {
-                        console.error('Error processing image:', error);
-                        fs.remove(file.path).catch(console.error);
-                    }
+                    const { fileUrl } = await processUploadedImage(file, 'project');
+                    newImages.push(fileUrl);
                 }
             }
 
-            const allImages = [...existingProject.images, ...newImageUrls];
+            const allImages = [...(existingProject.images || []), ...newImages];
 
             const updatedProject = await prisma.project.update({
                 where: { id },
@@ -337,13 +424,13 @@ export class ProjectController {
                     title,
                     description,
                     longDescription,
-                    features: Array.isArray(features) ? features : undefined,
+                    features: parsedFeatures,
                     challenges,
                     learnings,
                     githubUrl,
                     liveUrl,
                     videoUrl,
-                    technologies: Array.isArray(technologies) ? technologies : undefined,
+                    technologies: parsedTechnologies,
                     category,
                     status,
                     githubRepo,
@@ -359,6 +446,9 @@ export class ProjectController {
                             lastName: true,
                             avatar: true
                         }
+                    },
+                    _count: {
+                        select: { reviews: true }
                     }
                 }
             });
@@ -372,15 +462,13 @@ export class ProjectController {
             console.error('Update project error:', error);
 
             if (req.files && Array.isArray(req.files)) {
-                for (const file of req.files) {
-                    fs.remove(file.path).catch(console.error);
-                }
+                const filePaths = req.files.map((file: Express.Multer.File) => file.path);
+                deleteMultipleFiles(filePaths);
             }
 
-            const errorMessage = handleMulterError(error);
             return res.status(500).json({
                 error: 'Failed to update project',
-                message: errorMessage
+                message: 'Internal server error'
             });
         }
     }
@@ -408,22 +496,21 @@ export class ProjectController {
                 });
             }
 
+
+            if (existingProject.images && existingProject.images.length > 0) {
+                const filePaths = existingProject.images.map((imageUrl: string) => {
+                    const filename = path.basename(imageUrl);
+                    return path.join(process.cwd(), 'uploads', 'projects', filename);
+                });
+                deleteMultipleFiles(filePaths);
+            }
+
             await prisma.project.delete({
                 where: { id }
             });
 
-            for (const imageUrl of existingProject.images) {
-                try {
-                    const relativePath = imageUrl.replace(process.env.API_URL || 'http://localhost:3001', '');
-                    const filePath = path.join(process.cwd(), relativePath);
-                    await fs.remove(filePath);
-                } catch (error) {
-                    console.error('Error deleting image file:', error);
-                }
-            }
-
             return res.json({
-                message: 'Project deleted successfully'
+                message: `Project "${existingProject.title}" deleted successfully`
             });
 
         } catch (error) {
@@ -442,13 +529,20 @@ export class ProjectController {
 
             const project = await prisma.project.findUnique({
                 where: { id },
-                select: { id: true, likes: true }
+                select: { id: true, likes: true, authorId: true }
             });
 
             if (!project) {
                 return res.status(404).json({
                     error: 'Project not found',
                     message: 'No project found with this ID'
+                });
+            }
+
+            if (project.authorId === userId) {
+                return res.status(400).json({
+                    error: 'Cannot like own project',
+                    message: 'You cannot like your own project'
                 });
             }
 
@@ -483,6 +577,13 @@ export class ProjectController {
             const { id } = req.params;
             const { imageUrl } = req.body;
 
+            if (!imageUrl) {
+                return res.status(400).json({
+                    error: 'Image URL required',
+                    message: 'Please specify the image URL to remove'
+                });
+            }
+
             const project = await prisma.project.findUnique({
                 where: { id },
                 select: { authorId: true, images: true }
@@ -502,7 +603,7 @@ export class ProjectController {
                 });
             }
 
-            const updatedImages = project.images.filter((img : string) => img !== imageUrl);
+            const updatedImages = project.images.filter((img: string) => img !== imageUrl);
 
             const updatedProject = await prisma.project.update({
                 where: { id },
@@ -510,13 +611,9 @@ export class ProjectController {
                 select: { images: true }
             });
 
-            try {
-                const relativePath = imageUrl.replace(process.env.API_URL || 'http://localhost:3001', '');
-                const filePath = path.join(process.cwd(), relativePath);
-                await fs.remove(filePath);
-            } catch (error) {
-                console.error('Error deleting image file:', error);
-            }
+            const filename = path.basename(imageUrl);
+            const filePath = path.join(process.cwd(), 'uploads', 'projects', filename);
+            deleteFile(filePath);
 
             return res.json({
                 message: 'Image removed successfully',

@@ -70,6 +70,41 @@ export const authenticateToken = async (
     }
 };
 
+export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.split(' ')[1];
+
+        if (!token) {
+            // No token provided, continue without authentication
+            return next();
+        }
+
+        const decoded = JWTUtill.verifyAccessToken(token);
+
+        if (decoded) {
+            const user = await prisma.user.findUnique({
+                where: { id: decoded.userId },
+                select: {
+                    id: true,
+                    email: true,
+                    username: true,
+                    verified: true
+                }
+            });
+
+            if (user) {
+                req.user = user;
+            }
+        }
+
+        next();
+    } catch (error) {
+        // Token verification failed, continue without authentication
+        next();
+    }
+};
+
 export const requireVerification = (
     req: Request,
     res: Response,
