@@ -3,15 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 
-interface User {
-    id: string;
-    email: string;
-    username: string;
-    firstName?: string | null;
-    lastName?: string | null;
-    verified: boolean;
-    createdAt?: Date;
-}
+import { User } from '@/types';
 
 interface AuthContextType {
     user: User | null;
