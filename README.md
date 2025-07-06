@@ -145,7 +145,7 @@ npx prisma db push   # Sync schema
 ### Backend (.env)
 ```env
 NODE_ENV=development
-PORT=5000
+PORT=3001
 FRONTEND_URL=http://localhost:3000
 DATABASE_URL=postgresql://devflow_user:devflow_password@localhost:5432/devflow_db
 JWT_SECRET=your-secret-here
@@ -153,7 +153,7 @@ JWT_SECRET=your-secret-here
 
 ### Frontend (.env.local)
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000
+NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
 ## ✅ Day 1 Completed
