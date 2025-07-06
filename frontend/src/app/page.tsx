@@ -138,7 +138,7 @@ export default function Home() {
           {isAuthenticated && (
             <div className="mt-8 p-6 bg-white rounded-lg shadow-lg max-w-2xl mx-auto">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                🎉 Welcome back, {user?.firstName || user?.username}!
+                Welcome back, {user?.firstName || user?.username}!
               </h3>
               <p className="text-gray-600 mb-4">
                 Ready to showcase your projects and connect with fellow developers?

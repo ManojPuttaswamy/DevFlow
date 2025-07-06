@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../utils/database';
 import { getFileUrl, deleteFile, processUploadedImage, deleteMultipleFiles } from '../utils/fileupload';
 import path from 'path';
+import { title } from 'process';
 
 export class ProjectController {
     static async getUserProjects(req: Request, res: Response) {
@@ -479,7 +480,7 @@ export class ProjectController {
 
             const existingProject = await prisma.project.findUnique({
                 where: { id },
-                select: { authorId: true, images: true }
+                select: { authorId: true, images: true, title : true }
             });
 
             if (!existingProject) {
