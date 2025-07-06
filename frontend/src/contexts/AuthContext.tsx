@@ -2,8 +2,20 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-
-import { User } from '@/types';
+interface User {
+    id: string;
+    email: string;
+    username: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    verified: boolean;
+    avatar?: string | null;
+    title?: string | null;
+    bio?: string | null;
+    company?: string | null;
+    location?: string | null;
+    createdAt?: Date;
+}
 
 interface AuthContextType {
     user: User | null;
@@ -14,6 +26,7 @@ interface AuthContextType {
     register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     refreshToken: () => Promise<boolean>;
+    updateUser: (userData: Partial<User>) => void; // ADD this missing function
 }
 
 interface RegisterData {
@@ -26,7 +39,7 @@ interface RegisterData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -35,12 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const savedToken = localStorage.getItem('devflow_token');
-        console.log(savedToken);
         if (savedToken) {
             setToken(savedToken);
             validateTokenAndGetProfile(savedToken);
-        }
-        else {
+        } else {
             setIsLoading(false);
         }
     }, []);
@@ -59,20 +70,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const data = await response.json();
                 setUser(data.user);
                 setToken(token);
-            }
-            else {
+            } else {
                 localStorage.removeItem('devflow_token');
                 setToken(null);
                 setUser(null);
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error('Token validation error: ', error);
             localStorage.removeItem('devflow_token');
             setToken(null);
             setUser(null);
-        }
-        finally {
+        } finally {
             setIsLoading(false);
         }
     }
@@ -95,8 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setToken(data.token);
                 localStorage.setItem('devflow_token', data.token);
                 return { success: true };
-            }
-            else {
+            } else {
                 return {
                     success: false,
                     error: data.message || 'Login failed'
@@ -108,8 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 success: false,
                 error: 'Network error. Please try again.'
             };
-        }
-        finally {
+        } finally {
             setIsLoading(false);
         }
     };
@@ -128,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const data = await response.json();
             if (response.ok) {
-                setUser(data.User);
+                setUser(data.user);
                 setToken(data.token);
                 localStorage.setItem('devflow_token', data.token);
                 return { success: true };
@@ -151,34 +157,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = async () => {
         try {
-          await fetch(`${API_URL}/api/auth/logout`, {
-            method: 'POST',
-            credentials: 'include',
-          });
+            await fetch(`${API_URL}/api/auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+            });
         } catch (error) {
-          console.error('Logout error:', error);
+            console.error('Logout error:', error);
         } finally {
-          setUser(null);
-          setToken(null);
-          localStorage.removeItem('devflow_token');
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem('devflow_token');
         }
-      };
+    };
 
-      const refreshToken = async () : Promise<boolean> => {
+    const refreshToken = async (): Promise<boolean> => {
         try {
-            const response = await fetch (`${API_URL}/api/auth/refresh`,{
+            const response = await fetch(`${API_URL}/api/auth/refresh`, {
                 method: 'POST',
                 credentials: 'include'
             });
 
-            if (response.ok){
+            if (response.ok) {
                 const data = await response.json();
                 setToken(data.token);
                 setUser(data.user);
                 localStorage.setItem('devflow_token', data.token);
                 return true;
-            }
-            else {
+            } else {
                 logout();
                 return false;
             }
@@ -187,9 +192,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             logout();
             return false;
         }
-      };
+    };
 
-      const value: AuthContextType = {
+    // ADD the missing updateUser function
+    const updateUser = (userData: Partial<User>) => {
+        setUser(prevUser => {
+            if (!prevUser) return null;
+            return { ...prevUser, ...userData };
+        });
+    };
+
+    const value: AuthContextType = {
         user,
         token,
         isLoading,
@@ -198,19 +211,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         refreshToken,
-      };
+        updateUser, // ADD this to the context value
+    };
 
-      return (
+    return (
         <AuthContext.Provider value={value}>
-          {children}
+            {children}
         </AuthContext.Provider>
-      );
+    );
 }
 
 export function useAuth() {
     const context = useContext(AuthContext);
     if (context === undefined) {
-      throw new Error('useAuth must be used within an AuthProvider');
+        throw new Error('useAuth must be used within an AuthProvider');
     }
     return context;
-  }
+}
