@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { MapPin, Building, Globe, Github, Linkedin, Twitter, Calendar, Eye, User, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import UserReviewStats from '@/components/profile/UserReviewStats';
+import UserReviewHistory from '@/components/profile/UserReviewHistory';
 
 interface UserProfile {
   id: string;
@@ -284,7 +286,7 @@ const PublicProfile = ({ params }: PublicProfileProps) => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
             {/* Projects */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
@@ -367,6 +369,20 @@ const PublicProfile = ({ params }: PublicProfileProps) => {
                   ))}
                 </div>
               )}
+            </div>
+
+            <UserReviewStats
+              userId={profile.id}
+              username={profile.username}
+              isOwnProfile={isOwnProfile}
+            />
+
+            <div id="reviews">
+              <UserReviewHistory
+                userId={profile.id}
+                username={profile.username}
+                isOwnProfile={isOwnProfile}
+              />
             </div>
           </div>
 

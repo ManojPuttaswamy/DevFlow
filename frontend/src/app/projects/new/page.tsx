@@ -96,7 +96,6 @@ const CreateProject = () => {
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     
-    // Validate files
     const validFiles = files.filter(file => {
       if (!file.type.startsWith('image/')) {
         setError('Only image files are allowed');
@@ -116,7 +115,6 @@ const CreateProject = () => {
 
     setSelectedImages(prev => [...prev, ...validFiles]);
 
-    // Create previews
     validFiles.forEach(file => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -138,7 +136,6 @@ const CreateProject = () => {
     setLoading(true);
     setError('');
 
-    // Validation
     if (!project.title.trim()) {
       setError('Project title is required');
       setLoading(false);
@@ -154,7 +151,6 @@ const CreateProject = () => {
     try {
       const formData = new FormData();
       
-      // Add project data
       Object.entries(project).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           formData.append(key, JSON.stringify(value));
@@ -163,7 +159,6 @@ const CreateProject = () => {
         }
       });
 
-      // Add images
       selectedImages.forEach((image, index) => {
         formData.append('projectImages', image);
       });

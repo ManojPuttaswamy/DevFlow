@@ -19,8 +19,8 @@ export interface User {
     availability?: string | null;
     profileViews?: number;
     verified?: boolean;
-    createdAt?: Date | string;
-    updatedAt?: Date | string;
+    createdAt?: string;
+    updatedAt?: string;
     projects?: Project[];
     _count?: {
         projects: number;
@@ -65,33 +65,52 @@ export interface Project {
     _count?: {
         reviews: number;
     };
-    createdAt: Date | string;
-    updatedAt: Date | string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface Review {
     id: string;
     rating: number;
-    comment?: string | null;
+    comment: string;
     status: ReviewStatus;
-    codeQuality?: number | null;
-    documentation?: number | null;
-    userExperience?: number | null;
-    innovation?: number | null;
+    codeQuality: number;
+    documentation: number;
+    userExperience: number;
+    innovation: number;
     projectId: string;
     project?: {
+        id: string;
         title: string;
+        description: string;
+        images: string[];
+        technologies: string[];
+        author: {
+            id: string;
+            username: string | null;
+            firstName?: string | null;
+            lastName?: string | null;
+            avatar?: string | null;
+        };
     };
     reviewerId: string;
-    reviewer?: {
+    reviewer: {
+        id: string;
         username: string;
         firstName?: string | null;
         lastName?: string | null;
         avatar?: string | null;
     };
     authorId: string;
-    createdAt: Date | string;
-    updatedAt: Date | string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface RatingDistribution {
+    rating: number;
+    _count: {
+        rating: number;
+    };
 }
 
 export type ProjectStatus = 'PLANNING' | 'IN_PROGRESS' | 'COMPLETED' | 'MAINTENANCE' | 'ARCHIVED';
@@ -110,7 +129,7 @@ export interface DashboardData {
         status: ProjectStatus;
         views: number;
         likes: number;
-        createdAt: Date | string;
+        createdAt: string;
     }>;
     reviewsGiven: Array<{
         id: string;
@@ -118,7 +137,7 @@ export interface DashboardData {
         project: {
             title: string;
         };
-        createdAt: Date | string;
+        createdAt: string;
     }>;
     reviewsReceived: Array<{
         id: string;
@@ -130,7 +149,7 @@ export interface DashboardData {
             lastName?: string | null;
             avatar?: string | null;
         };
-        createdAt: Date | string;
+        createdAt: string;
     }>;
     _count: {
         projects: number;
@@ -184,4 +203,13 @@ export interface ApiResponse<T> {
     data?: T;
     error?: string;
     details?: any[];
+}
+
+export interface ReviewData {
+    rating: number;
+    comment: string;
+    codeQuality: number;
+    documentation: number;
+    userExperience: number;
+    innovation: number;
 }

@@ -23,6 +23,7 @@ import {
     Activity
 } from 'lucide-react';
 import Link from 'next/link';
+import DashboardReviewSection from '@/components/dashboard/ReviewSection';
 
 export default function Dashboard() {
     const { user, logout } = useAuth();
@@ -57,13 +58,12 @@ export default function Dashboard() {
         return user?.firstName || user?.username || 'User';
     };
 
-    const formatDate = (date: string | Date) => {
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
+    const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long'
+    });
+  };
 
     const getProjectStatusColor = (status: string) => {
         switch (status) {
@@ -104,7 +104,7 @@ export default function Dashboard() {
                             <div className="mb-4 sm:mb-0">
                                 <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
                                 <p className="text-gray-600 mt-1">
-                                    Welcome back, {getDisplayName(user)}! 👋
+                                    Welcome back, {getDisplayName(user)}!
                                 </p>
                             </div>
                             <div className="flex items-center space-x-3">
@@ -211,10 +211,17 @@ export default function Dashboard() {
                                                     </dd>
                                                 </dl>
                                             </div>
+                                            <div className="ml-3">
+                                                <Link
+                                                    href={`/profile/${dashboard.username}#reviews`}
+                                                    className="text-purple-600 hover:text-purple-800"
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
                                 <div className="bg-white overflow-hidden shadow rounded-lg">
                                     <div className="p-5">
                                         <div className="flex items-center">
@@ -230,6 +237,14 @@ export default function Dashboard() {
                                                         {dashboard._count.reviewsReceived}
                                                     </dd>
                                                 </dl>
+                                            </div>
+                                            <div className="ml-3">
+                                                <Link
+                                                    href={`/profile/${dashboard.username}#reviews`}
+                                                    className="text-yellow-600 hover:text-yellow-800"
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                </Link>
                                             </div>
                                         </div>
                                     </div>
@@ -421,12 +436,23 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
-                            {/* Recent Activity */}
+                            <DashboardReviewSection
+                                userId={dashboard.id}
+                                username={dashboard.username}
+                            />
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 {/* Reviews Received */}
                                 <div className="bg-white shadow rounded-lg">
                                     <div className="px-6 py-4 border-b border-gray-200">
-                                        <h3 className="text-lg font-medium text-gray-900">Recent Reviews Received</h3>
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-lg font-medium text-gray-900">Recent Reviews Received</h3>
+                                            <Link
+                                                href={`/profile/${dashboard.username}#reviews`}
+                                                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                            >
+                                                View All →
+                                            </Link>
+                                        </div>
                                     </div>
                                     <div className="p-6">
                                         {dashboard.reviewsReceived.length > 0 ? (
@@ -468,7 +494,15 @@ export default function Dashboard() {
                                 {/* Reviews Given */}
                                 <div className="bg-white shadow rounded-lg">
                                     <div className="px-6 py-4 border-b border-gray-200">
-                                        <h3 className="text-lg font-medium text-gray-900">Recent Reviews Given</h3>
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-lg font-medium text-gray-900">Recent Reviews Given</h3>
+                                            <Link
+                                                href={`/profile/${dashboard.username}#reviews`}
+                                                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                            >
+                                                View All →
+                                            </Link>
+                                        </div>
                                     </div>
                                     <div className="p-6">
                                         {dashboard.reviewsGiven.length > 0 ? (

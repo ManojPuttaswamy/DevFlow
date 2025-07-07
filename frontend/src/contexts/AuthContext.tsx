@@ -1,21 +1,8 @@
 'use client'
 
+import { User } from '@/types';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface User {
-    id: string;
-    email: string;
-    username: string;
-    firstName?: string | null;
-    lastName?: string | null;
-    verified: boolean;
-    avatar?: string | null;
-    title?: string | null;
-    bio?: string | null;
-    company?: string | null;
-    location?: string | null;
-    createdAt?: Date;
-}
 
 interface AuthContextType {
     user: User | null;
@@ -26,7 +13,7 @@ interface AuthContextType {
     register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     refreshToken: () => Promise<boolean>;
-    updateUser: (userData: Partial<User>) => void; // ADD this missing function
+    updateUser: (userData: Partial<User>) => void;
 }
 
 interface RegisterData {
@@ -39,7 +26,7 @@ interface RegisterData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -194,7 +181,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // ADD the missing updateUser function
     const updateUser = (userData: Partial<User>) => {
         setUser(prevUser => {
             if (!prevUser) return null;
@@ -211,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         refreshToken,
-        updateUser, // ADD this to the context value
+        updateUser
     };
 
     return (

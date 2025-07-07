@@ -9,6 +9,7 @@ import prisma from './utils/database';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import projectRoutes from './routes/projectRoutes';
+import reviewRoutes from './routes/reviewRoutes';
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/auth',authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.use('/api', (req, res) => {
   res.json({ 
@@ -72,7 +74,8 @@ app.use('/api', (req, res) => {
       health: '/health',
       auth: '/api/auth',
       users: '/api/users',
-      projects: '/api/projects'
+      projects: '/api/projects',
+      reviews: '/api/reviews'
     }
   });
 });

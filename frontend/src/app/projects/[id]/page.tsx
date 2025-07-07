@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Calendar, Eye, Heart, MessageSquare, ExternalLink, Github, Edit, Trash2, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ProjectReviewsSection from '@/components/reviews/ProjectReviewSection';
+
 
 interface Project {
   id: string;
@@ -40,6 +42,9 @@ interface Project {
   _count: {
     reviews: number;
   };
+  averageRating?: number;
+  totalReviews?: number;
+
 }
 
 interface ProjectDetailProps {
@@ -272,12 +277,28 @@ const ProjectDetail = ({ params }: ProjectDetailProps) => {
             )}
           </div>
 
+          <div id="reviews">
+            <ProjectReviewsSection
+              project={{
+                id: project.id,
+                title: project.title,
+                authorId: project.author.id,
+                author: project.author
+              }}
+              isOwner={isOwner}
+              initialStats={{
+                averageRating: project.averageRating || 0,
+                totalReviews: project.totalReviews || project._count.reviews || 0
+              }}
+            />
+          </div>
+
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Project Info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Details</h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Status</span>
@@ -308,7 +329,7 @@ const ProjectDetail = ({ params }: ProjectDetailProps) => {
             {/* Project Stats */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Stats</h3>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
