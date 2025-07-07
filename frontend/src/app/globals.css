@@ -16,19 +16,16 @@
   }
 }
 
-/* FIXED: Only apply background to body, not text color */
 body {
   background: linear-gradient(to bottom,
       transparent,
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
-/* Apply text color only to main content areas, not form inputs */
 .main-content {
   color: rgb(var(--foreground-rgb));
 }
 
-/* Ensure all form inputs have visible text */
 input, textarea, select {
   color: #374151 !important;
   background-color: white !important;
@@ -43,7 +40,6 @@ input:disabled, textarea:disabled {
   background-color: #F9FAFB !important;
 }
 
-/* Handle browser autofill */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
