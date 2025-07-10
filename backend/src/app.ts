@@ -10,6 +10,8 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import projectRoutes from './routes/projectRoutes';
 import reviewRoutes from './routes/reviewRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+
 
 const app = express();
 
@@ -66,6 +68,7 @@ app.use('/api/auth',authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.use('/api', (req, res) => {
   res.json({ 
@@ -75,7 +78,8 @@ app.use('/api', (req, res) => {
       auth: '/api/auth',
       users: '/api/users',
       projects: '/api/projects',
-      reviews: '/api/reviews'
+      reviews: '/api/reviews',
+      notifications: '/api/notifications'
     }
   });
 });

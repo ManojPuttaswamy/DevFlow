@@ -49,6 +49,10 @@ model User {
   projects     Project[]
   reviewsGiven Review[] @relation("ReviewerReviews")
   reviewsReceived Review[] @relation("AuthorReviews")
+
+  //Notification
+  notifications       Notification[]
+  triggeredNotifications Notification[] @relation("TriggeredNotifications")
   
   @@map("users")
 }
@@ -95,6 +99,9 @@ model Project {
   // Metadata
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  //Notification
+  notifications       Notification[]
   
   @@map("projects")
 }
@@ -121,12 +128,46 @@ model Review {
   authorId    String   // Project author
   author      User     @relation("AuthorReviews", fields: [authorId], references: [id], onDelete: Cascade)
   
+
+  //Notification
+  notifications       Notification[]
+
+
   // Metadata
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   @@unique([projectId, reviewerId])
   @@map("reviews")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  title       String
+  message     String
+  type        NotificationType
+  data        Json?    // Additional data for the notification
+  read        Boolean  @default(false)
+  
+  // Relations
+  userId      String   // Recipient
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Optional relations for context
+  projectId   String?  // Related project
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  reviewId    String?  // Related review
+  review      Review?  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  
+  triggeredById String? // User who triggered the notification
+  triggeredBy   User?   @relation("TriggeredNotifications", fields: [triggeredById], references: [id], onDelete: SetNull)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("notifications")
 }
 
 enum ProjectStatus {
@@ -142,4 +183,16 @@ enum ReviewStatus {
   APPROVED
   REJECTED
   IN_PROGRESS
+}
+
+enum NotificationType {
+  REVIEW_RECEIVED    // Someone reviewed your project
+  REVIEW_APPROVED    // Your review was approved
+  REVIEW_REJECTED    // Your review was rejected
+  PROJECT_LIKED      // Someone liked your project
+  PROJECT_VIEWED     // Project view milestone (100, 500, 1000 views)
+  PROFILE_VIEWED     // Someone viewed your profile
+  SYSTEM_UPDATE      // System announcements
+  WELCOME            // Welcome message for new users
+  ACHIEVEMENT        // Achievement unlocked
 }
