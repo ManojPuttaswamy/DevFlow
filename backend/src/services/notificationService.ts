@@ -40,7 +40,7 @@ class NotificationService{
                         select : {
                             id: true,
                             username: true,
-                            firstname: true,
+                            firstName: true,
                             lastName: true
                         }
                     }
