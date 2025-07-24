@@ -121,10 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const data = await response.json();
             if (response.ok) {
-                setUser(data.user);
-                setToken(data.token);
-                localStorage.setItem('devflow_token', data.token);
-                return { success: true };
+                return await login(data.email, data.password);
             } else {
                 return {
                     success: false,

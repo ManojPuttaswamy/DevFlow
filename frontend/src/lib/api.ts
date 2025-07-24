@@ -1,4 +1,4 @@
-import { User, Project, DashboardData, ProjectFilters, ProjectsResponse, Review, ReviewData } from "@/types";
+import { User, Project, DashboardData, ProjectFilters, ProjectsResponse, Review, ReviewData, NotificationResponse } from "@/types";
 import { promises } from "dns";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -268,6 +268,43 @@ class ApiService {
                 averageRatingReceived: 0
             };
         }
+    }
+
+    async getNotifications(page: number = 1, limit: number = 20): Promise<NotificationResponse> {
+        return this.request(`/api/notifications?page=${page}&limit=${limit}`);
+    }
+
+    async getUnreadNotificationCount(): Promise<{ count: number }> {
+        return this.request('/api/notifications/unread-count');
+    }
+
+    async markNotificationAsRead(notificationId: string): Promise<{ message: string }> {
+        return this.request(`/api/notifications/${notificationId}/read`, {
+            method: 'PUT'
+        });
+    }
+
+    async markAllNotificationsAsRead(): Promise<{ message: string }> {
+        return this.request('/api/notifications/read-all', {
+            method: 'PUT'
+        });
+    }
+
+    async deleteNotification(notificationId: string): Promise<{ message: string }> {
+        return this.request(`/api/notifications/${notificationId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async createTestNotification(data?: {
+        title?: string;
+        message?: string;
+        type?: string;
+    }): Promise<{ message: string; notification: any }> {
+        return this.request('/api/notifications/test', {
+            method: 'POST',
+            body: JSON.stringify(data || {})
+        });
     }
 
 

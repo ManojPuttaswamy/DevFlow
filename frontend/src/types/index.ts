@@ -29,6 +29,59 @@ export interface User {
     };
 }
 
+export interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    type: NotificationType;
+    read: boolean;
+    data?: any;
+    userId: string;
+    projectId?: string | null;
+    project?: {
+        id: string;
+        title: string;
+    } | null;
+    reviewId?: string | null;
+    review?: {
+        id: string;
+        rating: number;
+    } | null;
+    triggeredById?: string | null;
+    triggeredBy?: {
+        id: string;
+        username: string;
+        firstName?: string | null;
+        lastName?: string | null;
+        avatar?: string | null;
+    } | null;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+}
+
+export type NotificationType = 
+    | 'REVIEW_RECEIVED'
+    | 'REVIEW_APPROVED' 
+    | 'REVIEW_REJECTED'
+    | 'PROJECT_LIKED'
+    | 'PROJECT_VIEWED'
+    | 'PROFILE_VIEWED'
+    | 'SYSTEM_UPDATE'
+    | 'WELCOME'
+    | 'ACHIEVEMENT';
+
+export interface NotificationResponse {
+    notifications: Notification[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNext: boolean;
+        hasPrev: boolean;
+    };
+}
+
 export interface Project {
     id: string;
     title: string;
