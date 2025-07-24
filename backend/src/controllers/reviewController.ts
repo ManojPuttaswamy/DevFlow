@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/database';
 import { CreateReviewRequest, ReviewAnalytics } from '../types/review';
+import { notificationService } from '../services/notificationService';
 
 export class ReviewController {
     static async createReview(req: Request, res: Response) {
@@ -82,6 +83,12 @@ export class ReviewController {
                     }
                 }
             });
+
+            await notificationService.createReviewNotification(
+                review.id, 
+                project.authorId, 
+                reviewerId
+              );
 
             return res.status(201).json({
                 message: 'Review submitted successfully',
@@ -347,6 +354,18 @@ export class ReviewController {
                         }
                     }
                 }
+            });
+
+            const statusText = status === 'APPROVED' ? 'approved' : 'rejected';
+
+            await notificationService.createNotification({
+                userId: review.reviewerId,
+                title: `Review ${statusText}`,
+                message: `Your review of "${review.project.title}" has been ${statusText}`,
+                type: status === 'APPROVED' ? 'REVIEW_APPROVED' : 'REVIEW_REJECTED',
+                projectId: review.projectId,
+                reviewId: review.id,
+                triggeredById: userId
             });
 
             return res.json({

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Code, User, Settings, FolderOpen, LogOut, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import NotificationBell from './notification/NotificationBell';
 
 const Navigation = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -63,7 +64,7 @@ const Navigation = () => {
           <div className="flex items-center space-x-4">
             {/* Notifications */}
             <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
-              <Bell className="w-5 h-5" />
+            <NotificationBell />
             </button>
 
             {/* User Avatar & Menu */}

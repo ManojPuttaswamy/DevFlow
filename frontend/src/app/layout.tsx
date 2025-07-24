@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
-import Navigation from '@/components/Navigation' // If you created the Navigation component
+import Navigation from '@/components/Navigation'
+import { NotificationProvider } from '@/contexts/NotificationContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,8 +21,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
+          <NotificationProvider>
           <Navigation />
           {children}
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

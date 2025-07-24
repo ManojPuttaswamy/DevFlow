@@ -4,6 +4,7 @@ import { ImageProcessor, handleMulterError } from "../utils/fileupload";
 import { getFileUrl, deleteFile, processUploadedImage } from '../utils/fileupload';
 import path from 'path';
 import fs from 'fs-extra';
+import { notificationService } from "../services/notificationService";
 
 export class UserController {
     static async getProfile(req: Request, res: Response) {
@@ -151,6 +152,8 @@ export class UserController {
                 });
                 user.profileViews += 1;
             }
+
+            await notificationService.createProfileViewNotification(user.id, req.user?.id);
 
             return res.json({ user });
         }

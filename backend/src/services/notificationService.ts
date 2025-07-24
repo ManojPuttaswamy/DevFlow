@@ -88,7 +88,7 @@ class NotificationService{
 
             await this.createNotification({
                 userId: projectAuthorId,
-                title: 'New Review Recieved' ,
+                title: 'New Review Received' ,
                 message : `${reviewerName} reviewd your project`,
                 type: 'REVIEW_RECEIVED',
                 data: {
@@ -103,6 +103,42 @@ class NotificationService{
             
         } catch (error) {
             console.error('Error creating review notification:', error);
+        }
+    }
+
+    async createProfileViewNotification(profileUserId: string, viewerId?: string) {
+        try {
+            if (profileUserId === viewerId) return;
+    
+            const [profileUser, viewer] = await Promise.all([
+                prisma.user.findUnique({
+                    where: { id: profileUserId },
+                    select: { firstName: true, username: true }
+                }),
+                prisma.user.findUnique({
+                    where: { id: viewerId },
+                    select: { firstName: true, lastName: true, username: true }
+                })
+            ]);
+    
+            if (!profileUser || !viewer) return;
+    
+            const viewerName = viewer.firstName && viewer.lastName 
+                ? `${viewer.firstName} ${viewer.lastName}`
+                : viewer.username;
+    
+            await this.createNotification({
+                userId: profileUserId,
+                title: 'Profile View',
+                message: `${viewerName} viewed your profile`,
+                type: 'PROFILE_VIEWED',
+                data: {
+                    viewerName
+                },
+                triggeredById: viewerId
+            });
+        } catch (error) {
+            console.error('Error creating profile view notification:', error);
         }
     }
 
@@ -158,11 +194,11 @@ class NotificationService{
                 userId: projectAuthorId,
                 title: `${viewCount} View Milestone!`,
                 message: `Your project "${project.title}" has reached ${viewCount} views! Keep up the great work!`,
-                type: 'PROFILE_VIEWED',
+                type: 'PROJECT_VIEWED',
                 data: {
                     projectTitle: project.title,
                     viewCount,
-                    milestones: viewCount
+                    milestone: viewCount
                 },
                 projectId: projectId
             });

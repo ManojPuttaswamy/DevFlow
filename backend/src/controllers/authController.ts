@@ -5,6 +5,8 @@ import { JWTUtill } from '../utils/jwt';
 import { RegisterRequest, LoginRequest, AuthResponse } from '../types/auth';
 import { error } from 'console';
 import { token } from 'morgan';
+import { notificationService } from '../services/notificationService';
+
 
 
 export class AuthController {
@@ -59,6 +61,9 @@ export class AuthController {
                     createdAt: true
                 }
             });
+
+            await notificationService.createWelcomeNotification(user.id);
+
 
             const accessToken = JWTUtill.generateAceessToken({
                 userId: user.id,

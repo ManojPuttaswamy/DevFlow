@@ -3,6 +3,7 @@ import prisma from '../utils/database';
 import { getFileUrl, deleteFile, processUploadedImage, deleteMultipleFiles } from '../utils/fileupload';
 import path from 'path';
 import { title } from 'process';
+import { notificationService } from '../services/notificationService';
 
 export class ProjectController {
     static async getUserProjects(req: Request, res: Response) {
@@ -253,6 +254,12 @@ export class ProjectController {
                 });
                 project.views += 1;
             }
+
+            await notificationService.createProjectViewMilestoneNotification(
+                id,
+                project.authorId,
+                project.views
+            );
 
             return res.json({ project });
 
@@ -557,6 +564,12 @@ export class ProjectController {
                     likes: true
                 }
             });
+
+            await notificationService.createProjectLikeNotification(
+                id, 
+                project.authorId, 
+                userId
+            );
 
             return res.json({
                 message: 'Project liked successfully',
