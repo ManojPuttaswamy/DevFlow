@@ -45,7 +45,7 @@ npm run dev
 ## Tech Stack
 
 ### Frontend
-- **Next.js 14** - React framework with App Router
+- **Next.js 15** - React framework with App Router
 - **React 18** - UI library
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
