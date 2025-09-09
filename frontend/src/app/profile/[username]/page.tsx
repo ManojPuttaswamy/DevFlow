@@ -6,6 +6,7 @@ import { MapPin, Building, Globe, Github, Linkedin, Twitter, Calendar, Eye, User
 import Link from 'next/link';
 import UserReviewStats from '@/components/profile/UserReviewStats';
 import UserReviewHistory from '@/components/profile/UserReviewHistory';
+import { use } from 'react';
 
 interface UserProfile {
   id: string;
@@ -52,13 +53,17 @@ interface UserProfile {
   };
 }
 
+// Updated interface for Next.js 15 - params is now a Promise
 interface PublicProfileProps {
-  params: {
+  params: Promise<{
     username: string;
-  };
+  }>;
 }
 
 const PublicProfile = ({ params }: PublicProfileProps) => {
+  // Use React's `use` hook to unwrap the Promise
+  const { username } = use(params);
+  
   const { user: currentUser, token } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +71,7 @@ const PublicProfile = ({ params }: PublicProfileProps) => {
 
   useEffect(() => {
     fetchProfile();
-  }, [params.username]);
+  }, [username]); // Use unwrapped username
 
   const fetchProfile = async () => {
     try {
@@ -76,7 +81,7 @@ const PublicProfile = ({ params }: PublicProfileProps) => {
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/${params.username}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/${username}`, // Use unwrapped username
         { headers }
       );
 
@@ -133,7 +138,7 @@ const PublicProfile = ({ params }: PublicProfileProps) => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile Not Found</h1>
-          <p className="text-gray-600 mb-4">{error || 'The profile you\'re looking for doesn\'t exist.'}</p>
+          <p className="text-gray-600 mb-4">{error || 'The profile you&apos;re looking for doesn&apos;t exist.'}</p>
           <Link
             href="/"
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"

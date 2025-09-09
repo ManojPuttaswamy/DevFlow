@@ -6,7 +6,7 @@ import { ArrowLeft, Calendar, Eye, Heart, MessageSquare, ExternalLink, Github, E
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProjectReviewsSection from '@/components/reviews/ProjectReviewSection';
-
+import { use } from 'react';
 
 interface Project {
   id: string;
@@ -44,16 +44,19 @@ interface Project {
   };
   averageRating?: number;
   totalReviews?: number;
-
 }
 
+// Updated interface for Next.js 15 - params is now a Promise
 interface ProjectDetailProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const ProjectDetail = ({ params }: ProjectDetailProps) => {
+  // Use React's `use` hook to unwrap the Promise
+  const { id } = use(params);
+  
   const { user, token } = useAuth();
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
@@ -62,7 +65,7 @@ const ProjectDetail = ({ params }: ProjectDetailProps) => {
 
   useEffect(() => {
     fetchProject();
-  }, [params.id]);
+  }, [id]); // Use unwrapped id
 
   const fetchProject = async () => {
     try {
@@ -72,7 +75,7 @@ const ProjectDetail = ({ params }: ProjectDetailProps) => {
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}`, // Use unwrapped id
         { headers }
       );
 
@@ -96,7 +99,7 @@ const ProjectDetail = ({ params }: ProjectDetailProps) => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}`, // Use unwrapped id
         {
           method: 'DELETE',
           headers: {
@@ -147,7 +150,7 @@ const ProjectDetail = ({ params }: ProjectDetailProps) => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Project Not Found</h1>
-          <p className="text-gray-600 mb-4">{error || 'The project you\'re looking for doesn\'t exist.'}</p>
+          <p className="text-gray-600 mb-4">{error || 'The project you&apos;re looking for doesn&apos;t exist.'}</p>
           <Link
             href="/projects"
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
