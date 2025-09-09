@@ -3,6 +3,7 @@ import prisma from '../utils/database';
 import { getFileUrl, deleteFile, processUploadedImage, deleteMultipleFiles } from '../utils/fileupload';
 import path from 'path';
 import { title } from 'process';
+import { redis } from '../utils/redis';
 import { notificationService } from '../services/notificationService';
 
 export class ProjectController {
@@ -96,6 +97,18 @@ export class ProjectController {
             const limitNum = parseInt(limit as string);
             const skip = (pageNum - 1) * limitNum;
 
+            //cache key
+            const cacheKey = `projects:${category}:${category}:${technology}:${status}:${search}:${featured},${author}`;
+
+            //try cache hit
+            const cachedResult = await redis.get(cacheKey);
+            if (cachedResult) {
+                console.log('Cache hit success');
+                return res.json(JSON.parse(cachedResult));
+            }
+
+            console.log('cache miss');
+
             const where: any = {};
 
             if (category && typeof category === 'string') {
@@ -170,7 +183,7 @@ export class ProjectController {
 
             const totalPages = Math.ceil(total / limitNum);
 
-            return res.json({
+            const result = {
                 projects,
                 pagination: {
                     page: pageNum,
@@ -180,7 +193,13 @@ export class ProjectController {
                     hasNext: pageNum < totalPages,
                     hasPrev: pageNum > 1
                 }
-            })
+            };
+
+            // cached project result
+            await redis.set(cacheKey, JSON.stringify(result), 300 /* 5 mins*/);
+            console.log(' Cached projects result for 5 minutes');
+
+            return res.json(result);
 
         }
         catch (error) {
@@ -487,7 +506,7 @@ export class ProjectController {
 
             const existingProject = await prisma.project.findUnique({
                 where: { id },
-                select: { authorId: true, images: true, title : true }
+                select: { authorId: true, images: true, title: true }
             });
 
             if (!existingProject) {
@@ -566,8 +585,8 @@ export class ProjectController {
             });
 
             await notificationService.createProjectLikeNotification(
-                id, 
-                project.authorId, 
+                id,
+                project.authorId,
                 userId
             );
 

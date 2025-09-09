@@ -62,7 +62,9 @@ export class AuthController {
                 }
             });
 
-            await notificationService.createWelcomeNotification(user.id);
+            await notificationService.createWelcomeNotification(user.id).catch(error => {
+                console.error('Failed to send welcome notification:', error);
+            });
 
 
             const accessToken = JWTUtill.generateAceessToken({

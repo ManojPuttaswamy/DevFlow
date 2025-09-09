@@ -307,6 +307,12 @@ class ApiService {
         });
     }
 
+    async toggleProjectLike(projectId: string): Promise<{ liked: boolean }> {
+        return this.request(`/api/projects/${projectId}/like`, {
+            method: 'POST'
+        });
+    }
+
 
 }
 

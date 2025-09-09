@@ -6,8 +6,6 @@ import { upload } from "../utils/fileupload";
 import { parseProjectFormData } from "../middleware/formDataParser";
 
 
-
-
 const router = Router();
 
 router.get('/', optionalAuth, ProjectController.getProjects);

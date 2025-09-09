@@ -54,6 +54,15 @@ model User {
   notifications       Notification[]
   triggeredNotifications Notification[] @relation("TriggeredNotifications")
   
+  //Performance Indexes
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
+  @@index([lastActive])
+  @@index([skills])
+  @@index([location])
+  @@index([availability])
+
   @@map("users")
 }
 
@@ -102,6 +111,20 @@ model Project {
 
   //Notification
   notifications       Notification[]
+
+  // Performance Indexes
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([technologies])
+  @@index([category])
+  @@index([status])
+  @@index([featured])
+  @@index([views])
+  @@index([likes])
+  @@index([authorId, createdAt])
+  @@index([featured, createdAt])
+  @@index([category, status])
   
   @@map("projects")
 }
@@ -136,6 +159,17 @@ model Review {
   // Metadata
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([reviewerId])
+  @@index([authorId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([rating])
+  @@index([projectId, status])
+  @@index([reviewerId, createdAt])
+  @@index([authorId, createdAt])
+  
   
   @@unique([projectId, reviewerId])
   @@map("reviews")
@@ -166,6 +200,15 @@ model Notification {
   // Metadata
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Performance Indexes
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([createdAt])
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@index([userId, read, createdAt])
   
   @@map("notifications")
 }
