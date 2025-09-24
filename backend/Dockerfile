@@ -17,7 +17,7 @@ FROM node:18-alpine AS production
 WORKDIR /app
 
 
-RUN apk add --no-cache curl openssl
+RUN apk add --no-cache curl openssl postgresql-client
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nodejs -u 1001

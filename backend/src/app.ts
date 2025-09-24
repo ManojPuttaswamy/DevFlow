@@ -12,8 +12,10 @@ import projectRoutes from './routes/projectRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import { requestCache } from './middleware/requestCache';
-import { redis } from './utils/redis';
 import { compressionMiddleware } from './middleware/compression';
+import { errorLogger, requestLogger } from './middleware/requestLogger';
+import { logger } from './utils/logger';
+import { BackupScheduler } from './services/backupScheduler';
 
 
 const app = express();
@@ -81,6 +83,7 @@ const authLimiter = rateLimit({
 app.use('/api/auth', authLimiter);
 
 // Logging
+app.use(requestLogger);
 // Compression middleware
 app.use(compressionMiddleware);
 
@@ -91,10 +94,20 @@ if (isProduction) {
   app.use(morgan('dev'));
 }
 
+logger.info('DevFlow API Server started', {
+  port: process.env.PORT,
+  environment: process.env.NODE_ENV
+});
+
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+if (process.env.NODE_ENV === 'production') {
+  const backupScheduler = new BackupScheduler();
+  backupScheduler.start();
+}
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
@@ -147,6 +160,8 @@ app.use('/api', (req, res) => {
     }
   });
 });
+
+app.use(errorLogger);
 
 // Global Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
