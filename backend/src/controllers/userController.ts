@@ -151,19 +151,15 @@ export class UserController {
             if (!isSelfView) {
                 await prisma.user.update({
                     where: { id: user.id },
-                    data: { profileViews: { increment: 1 } }
+                    data: { profileViews: { increment: 1 } },
                 });
 
                 user.profileViews += 1;
 
-                // only notify when someone else views the profile
-                await notificationService.createProfileViewNotification(
-                    user.id,
-                    viewerId
-                );
+                if (viewerId) {
+                    await notificationService.createProfileViewNotification(user.id, viewerId);
+                }
             }
-
-            await notificationService.createProfileViewNotification(user.id, req.user?.id);
 
             return res.json({ user });
         }
