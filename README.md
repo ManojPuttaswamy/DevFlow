@@ -17,12 +17,7 @@ git clone https://github.com/ManojPuttaswamy/DevFlow.git
 cd devflow
 ```
 
-2. **Start Database**
-```bash
-docker-compose up -d
-```
-
-3. **Backend Setup**
+2. **Backend Setup**
 ```bash
 cd backend
 npm install
@@ -31,16 +26,16 @@ npx prisma db push
 npm run dev
 ```
 
-4. **Frontend Setup** (new terminal)
+3. **Frontend Setup** (new terminal)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-5. **Access**
-- Frontend: http://localhost:3000
-- Backend: http://localhost:3001/health
+4. **Access**
+- Frontend: http://localhost
+- Backend: http://localhost/api/health
 
 ## Tech Stack
 
@@ -103,6 +98,7 @@ model Review {
 npm run dev      # Development server
 npm run build    # Production build
 npm run lint     # Code linting
+npm run test     # Unit testing
 ```
 
 ### Frontend
@@ -117,26 +113,4 @@ npm run lint     # Code linting
 npx prisma studio    # Database GUI
 npx prisma generate  # Generate client
 npx prisma db push   # Sync schema
-```
-
-## 15-Day Roadmap
-
-### Phase 1: Foundation (Days 1-5)
-- [x] Project setup & database
-- [x] Authentication system
-- [x] User profiles  
-- [x] Project management
-- [x] Basic review system
-
-### Phase 2: Features (Days 6-10)
-- [x] Real-time notifications
-- [x] File uploads
-- [x] UI polish
-- [x] Testing
-
-### Phase 3: Production (Days 11-15)
-- [x] Performance optimization
-- [x] Deployment
-- [ ] Monitoring
-
 ```
