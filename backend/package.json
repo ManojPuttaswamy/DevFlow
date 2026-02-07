@@ -62,8 +62,5 @@
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.2"
-  },
-  "overrides": {
-    "nodemailer": "^7.0.8"
   }
 }
