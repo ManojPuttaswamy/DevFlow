@@ -1,7 +1,7 @@
 FROM node:18-alpine AS base
 WORKDIR /app
 RUN apk add --no-cache openssl openssl-dev
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 FROM base AS deps
 RUN npm ci --only=production && npm cache clean --force
